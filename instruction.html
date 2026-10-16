@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Инструкция КуулКлевер 3D</title>
+<style>
+/* Layout: одна колонка шагов; у каждого персонажа цепочка из трёх кадров «эталон → комплект → поза». */
+:root{
+  --bg:#ffffff; --bg2:#f5f5f7; --sf:#fff; --glass:rgba(255,255,255,.78);
+  --ink:#1d1d1f; --ink2:#3c3c43; --mut:#86868b; --faint:#c7c7cc;
+  --hair:rgba(0,0,0,.09); --hair2:rgba(0,0,0,.045);
+  --acc:#80BA27; --acc-ink:#5D8A19; --acc-soft:rgba(128,186,39,.13);
+  --wrn:#ff9f0a; --wrn-ink:#a86400; --wrn-soft:rgba(255,159,10,.14);
+  --sh:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --e:cubic-bezier(.32,.72,0,1);
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#000; --bg2:#141416; --sf:#1c1c1e; --glass:rgba(28,28,30,.72);
+  --ink:#f5f5f7; --ink2:#d1d1d6; --mut:#8a8a8e; --faint:#48484a;
+  --hair:rgba(255,255,255,.14); --hair2:rgba(255,255,255,.06);
+  --acc:#9ACD46; --acc-ink:#A8DB55; --acc-soft:rgba(154,205,70,.16);
+  --wrn:#e0a458; --wrn-ink:#e8b877; --wrn-soft:rgba(224,164,88,.16);
+  --sh:0 1px 3px rgba(0,0,0,.5),0 8px 28px rgba(0,0,0,.6);
+  color-scheme:dark;}}
+:root[data-theme=dark]{
+  --bg:#000; --bg2:#141416; --sf:#1c1c1e; --glass:rgba(28,28,30,.72);
+  --ink:#f5f5f7; --ink2:#d1d1d6; --mut:#8a8a8e; --faint:#48484a;
+  --hair:rgba(255,255,255,.14); --hair2:rgba(255,255,255,.06);
+  --acc:#9ACD46; --acc-ink:#A8DB55; --acc-soft:rgba(154,205,70,.16);
+  --wrn:#e0a458; --wrn-ink:#e8b877; --wrn-soft:rgba(224,164,88,.16);
+  --sh:0 1px 3px rgba(0,0,0,.5),0 8px 28px rgba(0,0,0,.6);
+  color-scheme:dark;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:clip}
+html{background:var(--bg);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.w{max-width:960px;margin:0 auto;padding-left:max(22px,env(safe-area-inset-left,0px));padding-right:max(22px,env(safe-area-inset-right,0px))}
+@media (max-width:480px){.w{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
+section{padding-block:64px;border-bottom:.5px solid var(--hair)}
+section:last-of-type{border-bottom:none;padding-bottom:90px}
+@media (max-width:600px){section{padding-block:48px}}
+.tx{max-width:760px}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--acc-ink);text-decoration:none;margin-bottom:28px}
+.back svg{width:16px;height:16px}
+.back:focus-visible,.cp:focus-visible,.btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.k{font-size:14px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);margin-bottom:14px}
+h1{font-size:clamp(32px,7vw,48px);font-weight:700;letter-spacing:-1.3px;line-height:1.06;text-wrap:balance}
+h2{font-size:clamp(26px,6vw,36px);font-weight:700;letter-spacing:-1px;line-height:1.12;margin-bottom:16px;text-wrap:balance}
+h3{font-size:18px;font-weight:600;letter-spacing:-.2px}
+.l{font-size:19px;color:var(--ink2);line-height:1.5;max-width:56ch}
+.sub{margin-top:18px}
+.sh{font-size:14px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);margin:30px 0 12px;display:flex;align-items:center;gap:10px}
+.sh::after{content:"";flex:1;height:.5px;background:var(--hair)}
+.sh.a{color:var(--acc-ink)}
+
+.bar-top{position:fixed;top:calc(13px + env(safe-area-inset-top,0px));right:calc(13px + env(safe-area-inset-right,0px));z-index:90}
+.btn{height:38px;width:38px;border-radius:19px;border:.5px solid var(--hair);background:var(--glass);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--sh);color:var(--ink2);display:grid;place-items:center;cursor:pointer}
+.btn svg{width:17px;height:17px}
+.btn .mn{display:none}
+:root[data-theme=dark] .btn .sn{display:none}:root[data-theme=dark] .btn .mn{display:block}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .btn .sn{display:none}:root:not([data-theme=light]) .btn .mn{display:block}}
+
+/* шаги */
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:24px}
+@media (max-width:760px){.steps{grid-template-columns:1fr}}
+.st{background:var(--sf);border:.5px solid var(--hair);border-radius:20px;padding:20px;box-shadow:var(--sh);min-width:0}
+.st span{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:15px;background:var(--acc);color:#fff;font-weight:700;font-size:15px;margin-bottom:12px}
+.st p{font-size:15px;color:var(--ink2);line-height:1.45;margin-top:6px}
+
+/* цепочка кадров */
+.chain{background:var(--sf);border:.5px solid var(--hair);border-radius:24px;box-shadow:var(--sh);padding:16px;margin-top:12px}
+.chain h3{margin-bottom:12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.chain h3 small{font-size:14px;font-weight:500;color:var(--mut)}
+.cg{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr);align-items:center;gap:6px}
+.cg figure{position:relative;border-radius:14px;overflow:hidden;background:#fff;border:.5px solid var(--hair2);min-width:0}
+.cg img{display:block;width:100%;max-width:100%;aspect-ratio:1;object-fit:cover}
+.cg .lb{position:absolute;left:8px;top:8px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:11px;background:rgba(255,255,255,.9);color:#1d1d1f;border:.5px solid rgba(0,0,0,.08)}
+.cg .lb.a{background:#80BA27;color:#fff;border-color:transparent}
+.cg i{color:var(--faint);display:grid;place-items:center}
+.cg i svg{width:18px;height:18px}
+@media (max-width:480px){.cg{grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr) 12px minmax(0,1fr);gap:4px}.cg .lb{font-size:11px;padding:2px 7px;left:5px;top:5px}.cg i svg{width:12px;height:12px}}
+
+/* промпты */
+.pr{background:var(--sf);border:.5px solid var(--hair);border-radius:20px;box-shadow:var(--sh);margin-top:12px;overflow:hidden}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-bottom:.5px solid var(--hair)}
+.ph b{font-size:15px;font-weight:600}
+.ph b small{display:block;font-size:13px;font-weight:500;color:var(--mut)}
+.cp{flex:none;height:32px;padding:0 14px;border-radius:16px;border:.5px solid var(--hair);background:var(--acc-soft);color:var(--acc-ink);font:600 13px var(--font);cursor:pointer}
+.pr pre{margin:0;padding:16px 18px;font:500 13px/1.6 var(--mono);color:var(--ink2);white-space:pre-wrap;overflow-wrap:anywhere}
+
+.rows{margin-top:12px;background:var(--sf);border:.5px solid var(--hair);border-radius:20px;box-shadow:var(--sh);overflow:hidden}
+.r{display:flex;gap:14px;padding:16px 20px;border-bottom:.5px solid var(--hair);align-items:flex-start}
+.r:last-child{border-bottom:none}
+.r svg{width:20px;height:20px;flex:none;margin-top:2px;color:var(--acc-ink)}
+.r.x svg{color:var(--wrn-ink)}
+.r p{font-size:16px;color:var(--ink2);line-height:1.45;min-width:0}
+.tbl{overflow-x:auto;background:var(--sf);border:.5px solid var(--hair);border-radius:20px;box-shadow:var(--sh)}
+.tbl table{width:100%;border-collapse:collapse;font-size:15px;min-width:520px}
+.tbl th{text-align:left;font-size:13px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);padding:12px 16px;border-bottom:.5px solid var(--hair)}
+.tbl td{padding:12px 16px;border-bottom:.5px solid var(--hair2);vertical-align:top;color:var(--ink2)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+code{font:500 13px var(--mono);background:var(--bg2);border:.5px solid var(--hair2);padding:1px 6px;border-radius:6px;overflow-wrap:anywhere}
+.note{margin-top:10px;font-size:15px;color:var(--mut);line-height:1.5;max-width:70ch}
+.ph small code{font-size:12px}
+.co{margin-top:12px;display:flex;gap:13px;padding:18px 20px;border-radius:20px;background:var(--acc-soft);border:.5px solid var(--hair)}
+.co svg{width:20px;height:20px;flex:none;color:var(--acc-ink);margin-top:2px}
+.co p{font-size:16px;color:var(--ink2);line-height:1.45}
+</style>
+</head>
+<body>
+<div class="bar-top"><button class="btn" id="tb" type="button" aria-label="Переключить тему">
+  <svg class="sn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></svg>
+  <svg class="mn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+</button></div>
+
+<section>
+<div class="w">
+  <a class="back" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>К презентации</a>
+  <div class="tx">
+    <div class="k">Инструкция · 3D-маскоты</div>
+    <h1>Как сгенерировать персонажа в сезонном образе</h1>
+    <p class="l sub">Любой новый кадр собирается в три шага от эталона персонажа. Так морда, пропорции и характер не меняются, даже когда меняются одежда и поза.</p>
+  </div>
+  <div class="steps">
+    <div class="st"><span>1</span><h3>Взять эталон</h3><p>Базовая T-поза персонажа из развёртки. Это единственный источник внешности.</p></div>
+    <div class="st"><span>2</span><h3>Переодеть</h3><p>Эталон и промпт смены одежды дают новый эталон в той же T-позе.</p></div>
+    <div class="st"><span>3</span><h3>Поставить в позу</h3><p>Новый эталон и промпт позы дают готовый кадр для макета.</p></div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="w">
+  <div class="tx">
+    <div class="k">Пример · зимний комплект</div>
+    <h2>Три шага на каждого персонажа</h2>
+    <p class="l">Слева базовый эталон, в центре он же в зимней одежде, справа готовая поза.</p>
+  </div>
+  <div class="chain"><h3>Папа <small>свитер с ёлками, шапка, шарф, варежки</small></h3>
+    <div class="cg">
+      <figure><img src="img/step1_dad.jpg" alt="Папа, базовый эталон в T-позе"><span class="lb">1 · эталон</span></figure>
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></i>
+      <figure><img src="img/step2_dad.jpg" alt="Папа в зимней одежде, T-поза"><span class="lb">2 · комплект</span></figure>
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></i>
+      <figure><img src="img/step3_dad.jpg" alt="Папа бежит со снежным комом"><span class="lb a">3 · поза</span></figure>
+    </div></div>
+  <div class="chain"><h3>Мама <small>свитер с сердцем, розовый шарф, наушники</small></h3>
+    <div class="cg">
+      <figure><img src="img/step1_mom.jpg" alt="Мама, базовый эталон в T-позе"><span class="lb">1 · эталон</span></figure>
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></i>
+      <figure><img src="img/step2_mom.jpg" alt="Мама в зимней одежде, T-поза"><span class="lb">2 · комплект</span></figure>
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></i>
+      <figure><img src="img/step3_mom.jpg" alt="Мама вешает золотую звезду"><span class="lb a">3 · поза</span></figure>
+    </div></div>
+  <div class="chain"><h3>Сын <small>свитер со снежинками, шапка с помпоном, зелёный шарф</small></h3>
+    <div class="cg">
+      <figure><img src="img/step1_son.jpg" alt="Сын, базовый эталон в T-позе"><span class="lb">1 · эталон</span></figure>
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></i>
+      <figure><img src="img/step2_son.jpg" alt="Сын в зимней одежде, T-поза"><span class="lb">2 · комплект</span></figure>
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></i>
+      <figure><img src="img/step3_son.jpg" alt="Сын летит с письмом в лапах"><span class="lb a">3 · поза</span></figure>
+    </div></div>
+</div>
+</section>
+
+<section id="use">
+<div class="w">
+  <div class="tx">
+    <div class="k">Порядок работы</div>
+    <h2>Как пользоваться промптами</h2>
+    <p class="l">Ракурсы те же, что в основном справочнике: позы из 2D-иллюстраций в 3/4 с поворотом 45° вправо и камерой на уровне груди, позы лёжа с камерой чуть сверху.</p>
+  </div>
+  <div class="rows"><div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p><b>Сезонный эталон.</b> Приложите исходный эталон персонажа в T-позе из развёртки и промпт сезонного эталона. Получится персонаж в новом костюме.</p></div><div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p><b>Позы.</b> Приложите сезонный эталон из шага 1 и промпт позы.</p></div><div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p><b>Негативный промпт.</b> Добавьте общий негативный промпт из основного справочника и дополнения из таблицы своего сезона.</p></div><div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p><b>Проверка.</b> Проверьте кадр по чек-листу основного справочника. Дополнительно убедитесь, что сезонный костюм не потерялся и не смешался с базовой одеждой.</p></div></div>
+  <div class="sh">Отступления от основного справочника</div>
+  <div class="rows"><div class="r x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><p><b>Одежда.</b> Сезонные костюмы противоречат правилу «Do not change clothing», поэтому эталоны прямо заменяют наряд. В позах правило снова действует, но уже для сезонного костюма.</p></div><div class="r x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><p><b>Сын без кепки.</b> В обоих сезонных костюмах сын без жёлтой кепки с клевером. Его узнают по росту, а зимой ещё и по зелёному шарфу.</p></div><div class="r x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><p><b>Дополнение для сына.</b> В основном справочнике в дополнении для сына стоят <code>sweater</code> и <code>barefoot</code>, а в сезонных костюмах сын как раз в свитере и босиком. Поэтому для сезонных кадров дополнение заменено целиком (см. таблицы негативных промптов).</p></div><div class="r x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><p><b>Цвета вне палитры.</b> Розового цвета (наушники и шарф мамы) в палитре нет, поэтому HEX для него не указан. Для соломенной шляпы мамы взят бежевый <code>#D9AE88</code> из палитры.</p></div><div class="r x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><p><b>Румянец.</b> Розовые щёки с летней иллюстрации не перенесены: в описании стиля их нет. Если они нужны, добавьте в эталон строку <code>soft pink blush on the cheeks</code>.</p></div></div>
+</div>
+</section>
+
+<section id="winter">
+<div class="w">
+  <div class="tx">
+    <div class="k">Зима · промпты</div>
+    <h2>Зимние эталоны и позы</h2>
+    <p class="l">Сначала сезонный эталон в T-позе от базового эталона персонажа, затем позы от сезонного эталона.</p>
+  </div>
+  <div class="sh a">Зимние эталоны (T-поза)</div>
+<div class="pr"><div class="ph"><b>Папа: полный зимний комплект</b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara dad. Keep exactly the same face, head shape, boxy muzzle, heart-shaped nose, bead eyes, fur color, body proportions and 3D style. Replace only the outfit with the winter outfit described below.
+
+Winter outfit:
+- Red knitted Christmas sweater (#E0262F) with a ribbed rolled collar, ribbed cuffs and a ribbed hem covering the hips. A band of small off-white chevron knit pattern (#F3E4E4) across the chest and on the sleeves, a few small green knitted fir-tree motifs (#4CB848) on the belly, scattered tiny darker red chevron stitches, soft visible knit texture.
+- Red knitted beanie (#E0262F) with off-white chevron bands (#F3E4E4), a wide ribbed cuff and a fluffy red and off-white pompom, sitting on top of the head over the ears.
+- Long red knitted scarf (#E0262F) with off-white chevron pattern (#F3E4E4), wrapped once around the neck, one end hanging down the chest.
+- Red knitted mittens (#E0262F) with ribbed cuffs and a small off-white eight-petal snowflake motif on the back.
+- No trousers: bare legs below the sweater, slightly darker orange-brown feet, barefoot.
+
+Expression: calm, kind closed-mouth half-smile, no teeth visible.
+Style: soft toy-like look of modern family 3D animation, short velvety plush-like fur, rounded shapes, smooth matte materials, subtle subsurface scattering on nose.
+Pose and framing: T-pose, standing straight and symmetrical, facing the viewer directly, arms extended horizontally to the sides, legs slightly apart. Straight-on front view, full body including the whole beanie, centered composition.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet.
+High detail, character model sheet quality.</pre></div>
+<div class="pr"><div class="ph"><b>Папа: только свитер (для кадра у ёлки)</b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara dad. Keep exactly the same face, head shape, boxy muzzle, heart-shaped nose, bead eyes, ears, fur color, body proportions and 3D style. Replace only the outfit with the winter outfit described below.
+
+Winter outfit:
+- Red knitted Christmas sweater (#E0262F) with a ribbed rolled collar, ribbed cuffs and a ribbed hem covering the hips. A band of small off-white chevron knit pattern (#F3E4E4) across the chest and on the sleeves, a few small green knitted fir-tree motifs (#4CB848) on the belly, scattered tiny darker red chevron stitches, soft visible knit texture.
+- No hat, no scarf, no mittens.
+- No trousers: bare legs below the sweater, slightly darker orange-brown feet, barefoot.
+
+Expression: calm, kind closed-mouth half-smile, no teeth visible.
+Style: soft toy-like look of modern family 3D animation, short velvety plush-like fur, rounded shapes, smooth matte materials, subtle subsurface scattering on ears and nose.
+Pose and framing: T-pose, standing straight and symmetrical, facing the viewer directly, arms extended horizontally to the sides, legs slightly apart. Straight-on front view, full body, centered composition.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet.
+High detail, character model sheet quality.</pre></div>
+<div class="pr"><div class="ph"><b>Сын</b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara son. Keep exactly the same face, head shape, boxy muzzle, heart-shaped nose, bead eyes, fur color, body proportions and 3D style. Replace only the outfit with the winter outfit described below. He does not wear his baseball cap, T-shirt, shorts or sneakers in this outfit.
+
+Winter outfit:
+- Red knitted Christmas sweater (#E0262F) with ribbed collar, cuffs and hem, large off-white snowflake motifs (#F3E4E4) knitted on the body, off-white chevron bands on the sleeves, soft visible knit texture.
+- Red knitted beanie (#E0262F) with off-white chevron bands (#F3E4E4), a wide ribbed cuff and a fluffy green pompom (#4CB848), sitting straight on top of the head over the ears.
+- Green knitted scarf (#4CB848) with a lighter green chevron pattern and scalloped ends, wrapped around the neck, both ends hanging loosely.
+- Bare legs below the sweater, slightly darker orange-brown feet, barefoot.
+
+Expression: cheerful, curious closed-mouth smile, no teeth visible.
+Style: soft toy-like look of modern family 3D animation, short velvety plush-like fur, rounded shapes, smooth matte materials, subtle subsurface scattering on nose.
+Pose and framing: T-pose, standing straight and symmetrical, facing the viewer directly, arms extended horizontally to the sides, legs slightly apart. Straight-on front view, full body including the whole beanie, centered composition.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet.
+High detail, character model sheet quality.</pre></div>
+<div class="pr"><div class="ph"><b>Мама</b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara mom. Keep exactly the same face, head shape, boxy muzzle, heart-shaped nose, bead eyes with one small eyelash flick, fur color, body proportions, the same striped pleated skirt and 3D style. Replace only the sweater and add the winter accessories described below.
+
+Winter outfit:
+- Red knitted Christmas sweater (#E0262F) ending at the hips, ribbed collar and cuffs, wide ribbed hem. An off-white chevron knit band (#F3E4E4) across the upper chest, two off-white chevron-knit heart motifs on the chest, off-white chevron bands on the sleeves, soft visible knit texture.
+- The same short pleated A-line skirt with horizontal red (#E0262F) and off-white (#F3E4E4) stripes and a thin light pink trim at the hem, ending above the knees.
+- Fluffy soft pastel pink earmuffs with a thin darker pink headband over the top of the head, covering the ears.
+- Long soft pink knitted scarf with a small darker pink chevron pattern, wrapped around the neck, one long end hanging down the front.
+- Bare slender legs, slightly darker orange-brown feet, barefoot.
+
+Expression: warm, kind closed-mouth smile, no teeth visible.
+Style: soft toy-like look of modern family 3D animation, short velvety plush-like fur, rounded shapes, smooth matte materials, subtle subsurface scattering on nose.
+Pose and framing: T-pose, standing straight and symmetrical, facing the viewer directly, arms extended horizontally to the sides, legs slightly apart. Straight-on front view, full body including the earmuffs, centered composition.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet.
+High detail, character model sheet quality.</pre></div>
+  <div class="sh a">Зимние позы</div>
+<div class="pr"><div class="ph"><b>Папа со снежным комом<small>Эталон: папа, полный зимний комплект.</small></b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara dad in winter outfit. Keep exactly the same face, head shape, proportions, fur, outfit, beanie, scarf, mittens, colors and 3D style. Do not change or add clothing.
+Pose: running forward joyfully, carrying a big round snowball almost as large as his torso in both mittens against his chest, one leg kicked back and bent at the knee, body leaning forward, scarf end and pompom swinging with the motion.
+Expression: happy laugh, open-mouth smile with two small white front teeth visible.
+Camera: three-quarter view, body turned 45 degrees to the right of the frame, camera at chest height, full body including the whole snowball, centered.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet. High detail.</pre></div>
+<div class="pr"><div class="ph"><b>Папа вешает игрушку<small>Эталон: папа, только свитер.</small></b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara dad in winter sweater. Keep exactly the same face, head shape, proportions, fur, outfit, colors and 3D style. Do not change or add clothing.
+Pose: standing on slightly bent legs, one arm raised forward at head height holding a golden openwork Christmas ornament by its loop as if hanging it on a branch, the other arm relaxed, head lifted, looking up at the ornament with interest.
+Expression: calm, content closed-mouth half-smile, no teeth visible.
+Camera: three-quarter view, body turned 45 degrees to the right of the frame, camera at chest height, full body, centered.
+Background: plain pure white background, no tree, soft even studio lighting, soft contact shadow under the feet. High detail.</pre></div>
+<div class="pr"><div class="ph"><b>Сын скользит на животе<small>Эталон: зимний сын.</small></b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara son in winter outfit. Keep exactly the same face, head shape, proportions, fur, outfit, beanie, scarf, colors and 3D style. Do not change or add clothing.
+Pose: sliding forward on his belly, body stretched out low and horizontal, both arms reaching forward, one paw holding a small square postcard, legs stretched straight back, scarf ends and pompom flying back with the speed.
+Expression: surprised and excited, eyebrows raised, small open mouth with two small white front teeth visible.
+Camera: three-quarter view, body turned 45 degrees to the right of the frame, camera slightly above looking down at about 30 degrees, full body, centered.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the body. High detail.</pre></div>
+<div class="pr"><div class="ph"><b>Мама с гирляндой<small>Эталон: зимняя мама.</small></b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara mom in winter outfit. Keep exactly the same face, head shape, proportions, fur, outfit, skirt, earmuffs, scarf, colors and 3D style. Do not change or add clothing.
+Pose: standing with legs slightly apart, both arms spread wide and raised, holding a string of colorful glossy Christmas light bulbs (red, blue, orange, purple) that hangs in a loose arc in front of her chest, head tilted slightly, one hip shifted in a playful stance.
+Expression: warm, pleased closed-mouth smile, no teeth visible.
+Camera: three-quarter view, body turned 45 degrees to the right of the frame, camera at chest height, full body including the whole garland, centered.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet. High detail.</pre></div>
+  <div class="sh a">Зимние негативные промпты</div>
+  <div class="tbl"><table><thead><tr><th>Кадр</th><th>Дополнение</th></tr></thead><tbody><tr><td>Папа</td><td><code>trousers, chinos, striped sweater, Santa hat, gloves with fingers</code></td></tr><tr><td>Сын</td><td><code>skateboard, baseball cap, T-shirt, shorts, sneakers, trousers, tilted beanie</code> (вместо дополнения для сына из основного справочника)</td></tr><tr><td>Мама</td><td><code>long eyelashes, makeup, lipstick, trousers, hat, beanie</code></td></tr><tr><td>Эталоны в T-позе</td><td><code>three-quarter view, dynamic pose</code></td></tr><tr><td>Кадры с закрытым ртом</td><td><code>visible teeth, buck teeth, open mouth</code></td></tr></tbody></table></div>
+  <p class="note">Добавляется к общему негативному промпту из основного справочника.</p>
+</div>
+</section>
+
+<section id="summer">
+<div class="w">
+  <div class="tx">
+    <div class="k">Лето · промпты</div>
+    <h2>Летние эталоны и позы</h2>
+    <p class="l">Та же цепочка: базовый эталон, летний эталон в T-позе, затем позы.</p>
+  </div>
+  <div class="sh a">Летние эталоны (T-поза)</div>
+<div class="pr"><div class="ph"><b>Папа</b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara dad. Keep exactly the same face, head shape, boxy muzzle, heart-shaped nose, bead eyes, ears, fur color, body proportions and 3D style. Replace only the outfit with the summer outfit described below.
+
+Summer outfit:
+- Loose short-sleeve T-shirt with wide horizontal red (#E0262F) and off-white (#F3E4E4) stripes, soft cotton fabric, covering the hips.
+- Yellow sunglasses (#FFD21F) with rounded rectangular frames and dark green tinted lenses, sitting on the top of the muzzle in front of the eyes.
+- No trousers: bare legs below the T-shirt, slightly darker orange-brown feet, barefoot.
+
+Expression: calm, kind closed-mouth half-smile, no teeth visible.
+Style: soft toy-like look of modern family 3D animation, short velvety plush-like fur, rounded shapes, smooth matte materials, subtle subsurface scattering on ears and nose.
+Pose and framing: T-pose, standing straight and symmetrical, facing the viewer directly, arms extended horizontally to the sides, legs slightly apart. Straight-on front view, full body, centered composition.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet.
+High detail, character model sheet quality.</pre></div>
+<div class="pr"><div class="ph"><b>Сын</b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara son. Keep exactly the same face, head shape, boxy muzzle, heart-shaped nose, bead eyes, ears, fur color, body proportions and 3D style. Replace only the outfit with the summer outfit described below. He does not wear his baseball cap, shorts or sneakers in this outfit.
+
+Summer outfit:
+- Loose short-sleeve T-shirt with wide horizontal red (#E0262F) and off-white (#F3E4E4) stripes, soft cotton fabric, covering the hips.
+- Bare legs below the T-shirt, slightly darker orange-brown feet, barefoot.
+
+Expression: cheerful, curious closed-mouth smile, no teeth visible.
+Style: soft toy-like look of modern family 3D animation, short velvety plush-like fur, rounded shapes, smooth matte materials, subtle subsurface scattering on ears and nose.
+Pose and framing: T-pose, standing straight and symmetrical, facing the viewer directly, arms extended horizontally to the sides, legs slightly apart. Straight-on front view, full body, centered composition.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet.
+High detail, character model sheet quality.</pre></div>
+  <p class="note">Если кепку с клевером нужно сохранить как опознавательный знак, удалите фразу про кепку из этого промпта и уберите <code>baseball cap</code> из летнего негативного промпта сына.</p>
+<div class="pr"><div class="ph"><b>Мама</b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara mom. Keep exactly the same face, head shape, boxy muzzle, heart-shaped nose, bead eyes with one small eyelash flick, ears, fur color, body proportions and 3D style. Replace only the outfit with the summer outfit described below.
+
+Summer outfit:
+- Sleeveless summer sundress: fitted bodice with wide horizontal red (#E0262F) and off-white (#F3E4E4) stripes, a light flowing flared skirt in red (#E0262F) with wide off-white stripes (#F3E4E4) near the hem, ending just below the knees, soft airy fabric with gentle folds.
+- Straw boater hat in natural straw color (#D9AE88) with a flat crown, a wide flat brim and a red band (#E0262F), sitting on top of the head between the ears.
+- Bare slender legs below the dress, slightly darker orange-brown feet, barefoot.
+
+Expression: warm, kind closed-mouth smile, no teeth visible.
+Style: soft toy-like look of modern family 3D animation, short velvety plush-like fur, rounded shapes, smooth matte materials, subtle subsurface scattering on ears and nose.
+Pose and framing: T-pose, standing straight and symmetrical, facing the viewer directly, arms extended horizontally to the sides, legs slightly apart. Straight-on front view, full body including the whole hat, centered composition.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet.
+High detail, character model sheet quality.</pre></div>
+  <div class="sh a">Летние позы</div>
+<div class="pr"><div class="ph"><b>Папа с веслом<small>Эталон: летний папа.</small></b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara dad in summer outfit. Keep exactly the same face, head shape, proportions, fur, outfit, sunglasses, colors and 3D style. Do not change or add clothing.
+Pose: standing relaxed with weight on one leg, holding a long stand-up paddle diagonally across his body with both paws, dark brown shaft and yellow blade (#FFD21F) resting near his feet, head slightly raised, looking ahead with a cool, confident attitude.
+Expression: calm, satisfied closed-mouth half-smile, no teeth visible.
+Camera: three-quarter view, body turned 45 degrees to the right of the frame, camera at chest height, full body including the whole paddle, centered.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet. High detail.</pre></div>
+<div class="pr"><div class="ph"><b>Сын ищет пальму<small>Эталон: летний сын.</small></b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara son in summer outfit. Keep exactly the same face, head shape, proportions, fur, outfit, colors and 3D style. Do not change or add clothing.
+Pose: standing on slightly bent legs, one paw raised to his chin in a thoughtful gesture, the other arm bent behind his back, head turned and slightly lifted, looking into the distance as if searching for something.
+Expression: curious, puzzled closed-mouth smile, no teeth visible.
+Camera: three-quarter view, body turned 45 degrees to the right of the frame, camera at chest height, full body, centered.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet. High detail.</pre></div>
+<div class="pr"><div class="ph"><b>Сын в плавательном круге<small>Эталон: летний сын. Круг задаётся в позе, а не в эталоне: он закрывает туловище, и пропорции эталона хуже читаются.</small></b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara son in summer outfit. Keep exactly the same face, head shape, proportions, fur, outfit, colors and 3D style. Do not change or add clothing.
+Prop: inflatable swim ring worn around his waist over the striped T-shirt, glossy smooth vinyl, red (#E0262F) with four evenly spaced wide off-white segments (#F3E4E4) in a classic lifebuoy pattern, soft rounded tube, sized snugly for a small kid.
+Pose: standing with legs slightly apart, both arms resting forward on top of the swim ring, paws hanging relaxed over its front edge, head slightly lifted and turned toward the viewer, ready to go swimming.
+Expression: cheerful, curious closed-mouth smile, no teeth visible.
+Camera: three-quarter view, body turned 45 degrees to the right of the frame, camera at chest height, full body including the whole swim ring, centered.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the feet. High detail.</pre></div>
+  <p class="note">Круг можно добавить в любую позу сына: вставьте строку <code>Prop</code> в промпт позы, а в строке Camera допишите <code>including the whole swim ring</code>.</p>
+<div class="pr"><div class="ph"><b>Мама со стаканом воды<small>Эталон: летняя мама.</small></b><button class="cp" type="button">Копировать</button></div>
+<pre>Use the attached image as a strict character reference: capybara mom in summer outfit. Keep exactly the same face, head shape, proportions, fur, outfit, straw hat, colors and 3D style. Do not change or add clothing.
+Pose: sitting on the ground and leaning back on one arm, legs stretched forward and crossed at the ankles, dress gently spread around her, the other paw raised holding a clear glass of water with ice cubes, head tilted back in relaxed enjoyment.
+Expression: blissful, eyes closed in happy arcs, gentle closed-mouth smile, no teeth visible.
+Camera: three-quarter view, body turned 45 degrees to the right of the frame, camera at chest height of the seated character, full body including the whole hat, centered.
+Background: plain pure white background, soft even studio lighting, soft contact shadow under the body. High detail.</pre></div>
+  <div class="sh a">Летние негативные промпты</div>
+  <div class="tbl"><table><thead><tr><th>Кадр</th><th>Дополнение</th></tr></thead><tbody><tr><td>Папа</td><td><code>trousers, chinos, shorts, sweater, hat, black sunglasses</code></td></tr><tr><td>Сын</td><td><code>skateboard, baseball cap, shorts, sneakers, sweater, trousers, sunglasses</code> (вместо дополнения для сына из основного справочника)</td></tr><tr><td>Сын в плавательном круге</td><td>дополнение для сына и <code>water, pool, beach, rope on swim ring, inflatable animal ring, deflated ring</code></td></tr><tr><td>Мама</td><td><code>long eyelashes, makeup, lipstick, trousers, sweater, swimsuit, sun hat with floppy brim</code></td></tr><tr><td>Эталоны в T-позе</td><td><code>three-quarter view, dynamic pose</code></td></tr><tr><td>Все летние позы (рот закрыт)</td><td><code>visible teeth, buck teeth, open mouth</code></td></tr></tbody></table></div>
+  <p class="note">Добавляется к общему негативному промпту из основного справочника.</p>
+</div>
+</section>
+
+<section id="tips">
+<div class="w">
+  <div class="tx"><div class="k">Советы</div><h2>Что помогает держать стиль</h2></div>
+  <div class="rows"><div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p><b>Цепочка эталонов.</b> Сначала исходный эталон, потом сезонный, потом позы. Сезонный эталон тоже проверяйте по чек-листу основного справочника.</p></div><div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p><b>Midjourney.</b> Добавляйте <code>--cref &lt;ссылка на сезонный эталон&gt; --cw 100</code>.</p></div><div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p><b>Надписи.</b> Реплики и надписи с иллюстраций не генерируйте. Добавляйте их поверх картинки в редакторе.</p></div></div>
+</div>
+</section>
+
+<section>
+<div class="w">
+  <div class="tx">
+    <div class="k">Правила</div>
+    <h2>Проверка перед отправкой в макет</h2>
+  </div>
+  <div class="rows">
+    <div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p>Внешность всегда берётся из базового эталона</p></div>
+    <div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p>Поза генерируется от эталона нужного комплекта</p></div>
+    <div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p>Комплект целиком сохраняется в каждой позе</p></div>
+    <div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p>Морда-кирпичик, нос-сердечко и рост семьи неизменны</p></div>
+    <div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg><p>Палитра: красный и белый, акценты жёлтый и зелёный</p></div>
+  </div>
+  <div class="co"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <p>Готовые эталоны комплектов складываются в Figma рядом с базовой развёрткой и переиспользуются для всех новых поз.</p></div>
+</div>
+</section>
+
+<script>
+try{document.getElementById('tb').addEventListener('click',function(){var rt=document.documentElement,s=matchMedia('(prefers-color-scheme: dark)').matches,c=rt.getAttribute('data-theme');rt.setAttribute('data-theme',(c?c==='dark':s)?'light':'dark');});}catch(e){}
+[].forEach.call(document.querySelectorAll('.cp'),function(b){b.addEventListener('click',function(){
+  var pre=b.closest('.pr').querySelector('pre'),t=pre.textContent;
+  function sel(){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Выделено';}
+  try{navigator.clipboard.writeText(t).then(function(){b.textContent='Скопировано';setTimeout(function(){b.textContent='Копировать'},1600);},sel);}catch(e){sel();}
+});});
+</script>
+</body>
+</html>
